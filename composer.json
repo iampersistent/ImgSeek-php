@@ -1,0 +1,13 @@
+{
+    "name": "iampersistent/imgseek-php",
+    "description": "PHP classes for ImgSeek.",
+    "authors": [
+        {"name": "Richard Shank", "email": "develop@zestic.com"}
+    ],
+    "keywords": ["ImgSeek"],
+    "autoload": {
+        "psr-0": {
+            "Assert": "lib/"
+        }
+    }
+}
