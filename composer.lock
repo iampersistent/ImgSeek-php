@@ -1,7 +1,11 @@
 {
-    "hash": "37bcbaef5748381d0dae830d01ca7514",
+    "hash": "6c9b66628f98fea033044a3e139a539d",
     "packages": [
-
+        {
+            "package": "knplabs/gaufrette",
+            "version": "dev-master",
+            "source-reference": "7ac084fc256088a07add6883ca6dd72e4f5532ce"
+        }
     ],
     "packages-dev": null,
     "aliases": [
