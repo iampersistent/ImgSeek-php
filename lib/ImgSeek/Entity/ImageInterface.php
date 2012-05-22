@@ -30,16 +30,16 @@ interface ImageInterface
     /**
      * Set the image by a file location
      *
-     * @param $file
+     * @param $filename
      */
-    function setFile($file);
+    function setFilename($filename);
 
     /**
      * Return the image by the file location
      *
      * @return mixed
      */
-    function getFile();
+    function getFilename();
 
     /**
      * Return the ImgSeek image id

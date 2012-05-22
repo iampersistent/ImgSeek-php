@@ -9,7 +9,7 @@ class Image implements ImageInterface
 {
     protected $blob;
     protected $databaseId;
-    protected $file;
+    protected $filename;
     protected $id;
     protected $imageId;
     protected $url;
@@ -34,14 +34,14 @@ class Image implements ImageInterface
         return $this->databaseId;
     }
 
-    public function setFile($file)
+    public function setFilename($filename)
     {
-        $this->file = $file;
+        $this->filename = $filename;
     }
 
-    public function getFile()
+    public function getFilename()
     {
-        return $this->file;
+        return $this->filename;
     }
 
     public function getImageId()
