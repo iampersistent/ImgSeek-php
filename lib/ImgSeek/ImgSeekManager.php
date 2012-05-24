@@ -1,6 +1,9 @@
 <?php
 namespace ImgSeek;
 
+use Buzz\Client\ClientInterface;
+use Buzz\Message\Request;
+use Buzz\Message\Response;
 use Gaufrette\Filesystem;
 use ImgSeek\Entity\ImageInterface;
 use ImgSeek\Exception\ImageSourceException;
@@ -13,10 +16,11 @@ class ImgSeekManager
 {
     protected $filePath;
     protected $filesystem;
+    protected $httpClient;
     protected $imgSeekGateway;
     protected $persistence;
 
-    public function __construct(ImgSeekGatewayInterface $imgSeekGateway, PersistenceGatewayInterface $persistenceGateway, Filesystem $filesystem, array $config)
+    public function __construct(ImgSeekGatewayInterface $imgSeekGateway, PersistenceGatewayInterface $persistenceGateway, Filesystem $filesystem, ClientInterface $httpClient, array $config)
     {
         $this->defaultDbId = $config['dbId'];
         $this->filePath = $config['filePath'];
@@ -26,6 +30,7 @@ class ImgSeekManager
             $this->filePath .= '/';
         }
         $this->filesystem = $filesystem;
+        $this->httpClient = $httpClient;
         $this->imgSeekGateway = $imgSeekGateway;
         $this->persistence = $persistenceGateway;
     }
