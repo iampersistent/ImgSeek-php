@@ -1,12 +1,29 @@
 <?php
 namespace ImgSeek;
 
+use Gaufrette\Filesystem;
 use ImgSeek\Entity\ImageInterface;
+use ImgSeek\Exception\ImageSourceException;
+use ImgSeek\Gateway\ImgSeekGatewayInterface;
+use ImgSeek\Gateway\PersistenceGateway;
 /**
  * @author Richard Shank <develop@zestic.com>
  */
 class ImgSeekManager
 {
+    protected $filePath;
+    protected $filesystem;
+    protected $imgSeekGateway;
+    protected $persistence;
+
+    public function __construct(ImgSeekGatewayInterface $imgSeekGateway)
+    {
+//        $this->filePath = $filePath;
+//        $this->filesystem = $filesystem;
+        $this->imgSeekGateway = $imgSeekGateway;
+//        $this->persistence = $persistenceGateway;
+    }
+
     /**
      * Return an array of Image most similar to the supplied Image
      *
@@ -74,7 +91,20 @@ class ImgSeekManager
      */
     public function addImage(ImageInterface $image)
     {
+        if ($url = $image->getUrl()) {
+            throw new \Exception('not implemented');
+        } else {
+            if ($filename = $image->getFilename())  {
+                $blob = $this->filesystem->read($filename);
+            } elseif (!$blob = $image->getBlob()) {
+                throw new ImageSourceException('You must set a filename, url or blob for Image');
+            }
+            $this->persistence->persist($image, true);
+            $this->imgSeekGateway->request('addImgBlob', array($image->getDatabaseId(), $image->getImageId(), $blob));
+        }
 
+        // save database
+        $this->saveDb($image->getDatabaseId());
     }
 
     /**
