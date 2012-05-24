@@ -5,7 +5,7 @@ use Gaufrette\Filesystem;
 use ImgSeek\Entity\ImageInterface;
 use ImgSeek\Exception\ImageSourceException;
 use ImgSeek\Gateway\ImgSeekGatewayInterface;
-use ImgSeek\Gateway\PersistenceGateway;
+use ImgSeek\Gateway\PersistenceGatewayInterface;
 /**
  * @author Richard Shank <develop@zestic.com>
  */
@@ -16,12 +16,18 @@ class ImgSeekManager
     protected $imgSeekGateway;
     protected $persistence;
 
-    public function __construct(ImgSeekGatewayInterface $imgSeekGateway)
+    public function __construct(ImgSeekGatewayInterface $imgSeekGateway, PersistenceGatewayInterface $persistenceGateway, Filesystem $filesystem, array $config)
     {
-//        $this->filePath = $filePath;
-//        $this->filesystem = $filesystem;
+        $this->defaultDbId = $config['dbId'];
+        $this->filePath = $config['filePath'];
+        $trailing =    strrpos($this->filePath, '/')   ;
+        $len = strlen($this->filePath);
+        if (strrpos($this->filePath, '/') < (strlen($this->filePath) - 1)) {
+            $this->filePath .= '/';
+        }
+        $this->filesystem = $filesystem;
         $this->imgSeekGateway = $imgSeekGateway;
-//        $this->persistence = $persistenceGateway;
+        $this->persistence = $persistenceGateway;
     }
 
     /**
@@ -91,6 +97,11 @@ class ImgSeekManager
      */
     public function addImage(ImageInterface $image)
     {
+        $rp = new \ReflectionProperty($image, 'databaseId');
+        $rp->setAccessible(true);
+        $rp->setValue($image, $this->defaultDbId);
+        $rp->setAccessible(false);
+
         if ($url = $image->getUrl()) {
             throw new \Exception('not implemented');
         } else {
@@ -99,12 +110,12 @@ class ImgSeekManager
             } elseif (!$blob = $image->getBlob()) {
                 throw new ImageSourceException('You must set a filename, url or blob for Image');
             }
-            $this->persistence->persist($image, true);
+            $this->persistence->persistImage($image, true);
             $this->imgSeekGateway->request('addImgBlob', array($image->getDatabaseId(), $image->getImageId(), $blob));
         }
 
         // save database
-        $this->saveDb($image->getDatabaseId());
+        $this->saveImgSeek();
     }
 
     /**
@@ -116,4 +127,18 @@ class ImgSeekManager
     {
 
     }
+
+    /**
+     * Save the ImgSeek database
+     */
+    public function saveImgSeek()
+    {
+        return $this->imgSeekGateway->request('saveDbAs', array($this->defaultDbId, $this->generateDbFileName()));
+    }
+
+    protected function generateDbFileName()
+    {
+        return $this->filePath . sprintf('imgseek-db-%s.db', $this->defaultDbId);
+    }
 }
+

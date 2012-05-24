@@ -4,7 +4,6 @@ namespace ImgSeek;
 use ImgSeek\Entity\Image;
 use ImgSeek\ImgSeekManager;
 
-require_once __DIR__ . '/fixtures/ImgSeekTestGateway.php';
 /**
  * @author Richard Shank <develop@zestic.com>
  */
@@ -17,16 +16,35 @@ class ImgSeekManagerTest extends \PHPUnit_Framework_TestCase
         $mgr->addImage(new Image());
     }
 
+    public function testSaveImgSeek()
+    {
+        $mgr = $this->createImageSeekManager();
+        $this->setExpectedException('ImgSeek\Exception\ImgSeekException', 'saveDbAs');
+        $mgr->saveImgSeek();
+    }
+
+    public function testFilePath()
+    {
+        $mgr = $this->createImageSeekManager(null, null, null, array('filePath' => '/no-trailing'));
+        $rp = new \ReflectionProperty($mgr, 'filePath');
+        $rp->setAccessible(true);
+
+        $this->assertSame('/no-trailing/', $rp->getValue($mgr));
+
+        $mgr = $this->createImageSeekManager(null, null, null, array('filePath' => '/trailing/'));
+        $this->assertSame('/trailing/', $rp->getValue($mgr));
+    }
+
     public function testAddImageByFile()
     {
         $image = new Image();
         $image->setFilename('forgotten.jpg');
         $mgr = $this->createImageSeekManager();
 
-        $this->setExpectedException('Exception', 'SaveDb');   // ImgSeek is backed up
+        $this->setExpectedException('ImgSeek\Exception\ImgSeekException', 'saveDbAs');
         $mgr->addImage($image);
 
-        $this->assertSame(831, $image->getImageId(), 'the image id was generated');
+        $this->assertSame(44, $image->getImageId(), 'the image id was generated');
     }
 
     public function testAddImageByUrl()
@@ -36,7 +54,7 @@ class ImgSeekManagerTest extends \PHPUnit_Framework_TestCase
         );
         $this->assert('the image should be downloaded to temp folder');
         $this->assert('the image is persisted before added to ImgSeek');
-        $this->assertSame(831, $image->getImageId(), 'the image id was generated');
+        $this->assertSame(44, $image->getImageId(), 'the image id was generated');
         $this->setExpectedException('TestExeception', 'SaveDbAsCalled');   // ImgSeek is backed up
     }
 
@@ -84,10 +102,16 @@ class ImgSeekManagerTest extends \PHPUnit_Framework_TestCase
         $this->assert('an empty array should be returned');
     }
 
-    protected function createImageSeekManager()
+    protected function createImageSeekManager($imgSeekGateway = null, $persistenceGateway = null, $filesystem = null, array $config = array())
     {
+        $adapter = new \Gaufrette\Adapter\Local(__DIR__.'/../tests/fixtures/images');
+        $filesystem = new \Gaufrette\Filesystem($adapter);
+        $config = array_merge(array(
+            'dbId' => 1,
+            'filePath' => __DIR__.'/../tests/temp/imgseek',
+        ), $config);
 
-        $mgr = new ImgSeekManager(new \ImgSeekTestGateway());
+        $mgr = new ImgSeekManager(new \ImgSeekTestGateway(), new \PersistenceTestGateway(), $filesystem, $config);
 
         return $mgr;
     }
