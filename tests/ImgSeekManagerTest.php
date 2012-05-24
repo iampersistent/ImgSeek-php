@@ -25,13 +25,13 @@ class ImgSeekManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testFilePath()
     {
-        $mgr = $this->createImageSeekManager(null, null, null, array('filePath' => '/no-trailing'));
+        $mgr = $this->createImageSeekManager(null, null, null, null, array('filePath' => '/no-trailing'));
         $rp = new \ReflectionProperty($mgr, 'filePath');
         $rp->setAccessible(true);
 
         $this->assertSame('/no-trailing/', $rp->getValue($mgr));
 
-        $mgr = $this->createImageSeekManager(null, null, null, array('filePath' => '/trailing/'));
+        $mgr = $this->createImageSeekManager(null, null, null, null, array('filePath' => '/trailing/'));
         $this->assertSame('/trailing/', $rp->getValue($mgr));
     }
 
@@ -93,27 +93,41 @@ class ImgSeekManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryByUrl()
     {
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+        $mgr = $this->createImageSeekManager();
+        $images = $mgr->queryByUrl('http://testing.com/forgotten.jpg');
+
+
         $this->assert('the image should be downloaded');
+        $this->assert('an array of 1 Image objects should be returned');
         $this->assert('an array of Image objects should be returned');
 
         $this->assert('an empty array should be returned');
     }
 
-    protected function createImageSeekManager($imgSeekGateway = null, $persistenceGateway = null, $filesystem = null, array $config = array())
+    protected function createImageSeekManager($imgSeekGateway = null, $persistenceGateway = null, $filesystem = null, $client = null, array $config = array())
     {
-        $adapter = new \Gaufrette\Adapter\Local(__DIR__.'/../tests/fixtures/images');
-        $filesystem = new \Gaufrette\Filesystem($adapter);
+        if (!$imgSeekGateway) {
+            $imgSeekGateway = new \ImgSeekTestGateway();
+        }
+        if (!$filesystem) {
+            $adapter = new \Gaufrette\Adapter\Local(__DIR__.'/../tests/fixtures/images');
+            $filesystem = new \Gaufrette\Filesystem($adapter);
+        }
         $config = array_merge(array(
             'dbId' => 1,
             'filePath' => __DIR__.'/../tests/temp/imgseek',
         ), $config);
+        if (!$persistenceGateway) {
+            $persistenceGateway = new \PersistenceTestGateway();
+        }
+        if (!$client) {
+            $client = $this->getMock('Buzz\Client\Curl', array('lastResponse'));
+            $client->expects($this->any())
+                ->method('lastResponse')
+                ->will($this->returnValue('fakeimage'));
+        }
 
-        $mgr = new ImgSeekManager(new \ImgSeekTestGateway(), new \PersistenceTestGateway(), $filesystem, $config);
-
-        return $mgr;
+        return new ImgSeekManager($imgSeekGateway, $persistenceGateway, $filesystem, $client, $config);
     }
 }
 
