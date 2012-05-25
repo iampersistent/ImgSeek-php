@@ -93,15 +93,15 @@ class ImgSeekManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testQueryByUrl()
     {
-        $mgr = $this->createImageSeekManager();
-        $images = $mgr->queryByUrl('http://testing.com/forgotten.jpg');
+        $mgr = $this->createImageSeekManager(null, null, null, new \CurlTestClient());
+        $images = $mgr->queryByUrl('http://testing.com/1.jpg', 1);
 
+        $this->assertCount(1, $images, 'an array of one array of an Image object and its score should be returned');
+        $this->assertInstanceof('ImgSeek\Entity\ImageInterface', $images[0]['image']);
+        $this->assertArrayHasKey('score', $images[0]);
 
-        $this->assert('the image should be downloaded');
-        $this->assert('an array of 1 Image objects should be returned');
-        $this->assert('an array of Image objects should be returned');
-
-        $this->assert('an empty array should be returned');
+        $images = $mgr->queryByUrl('http://testing.com/2.jpg', 2);
+        $this->assertCount(2, $images, 'an array of two arrays of an Image object and its score should be returned');
     }
 
     protected function createImageSeekManager($imgSeekGateway = null, $persistenceGateway = null, $filesystem = null, $client = null, array $config = array())

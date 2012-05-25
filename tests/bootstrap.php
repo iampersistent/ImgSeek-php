@@ -1,6 +1,7 @@
 <?php
 
 $loader = @include __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/fixtures/CurlTestClient.php';
 require_once __DIR__ . '/fixtures/ImgSeekTestGateway.php';
 require_once __DIR__ . '/fixtures/PersistenceTestGateway.php';
 

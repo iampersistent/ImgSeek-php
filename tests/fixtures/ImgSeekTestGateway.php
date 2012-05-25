@@ -1,5 +1,6 @@
 <?php
 
+use ImgSeek\Entity\Image;
 use ImgSeek\Exception\ImgSeekException;
 use ImgSeek\Gateway\ImgSeekGatewayInterface;
 /**
@@ -21,6 +22,24 @@ class ImgSeekTestGateway implements ImgSeekGatewayInterface
             }
 
             return 1;
+        }
+
+        if ($function == 'queryImgBlob') {
+            if (!$parameters[0]) {
+                throw new \Exception('the first parameter in queryImgBlob should have a dbId');
+            }
+            if (!$parameters[1] || !is_string($parameters[1])) {
+                throw new \Exception('the second parameter in queryImgBlob should have a string of image data');
+            }
+            $response = array();
+            for ($x = 0 ; $x < $parameters[2] ; $x++) {
+                $match[0] = $x;
+                $match[1] = rand(0, 100) / 100;
+
+                $response[] = $match;
+            }
+
+            return $response;
         }
 
         if ($function == 'saveDb') {

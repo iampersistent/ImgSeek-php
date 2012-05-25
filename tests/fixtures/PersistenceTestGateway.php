@@ -1,6 +1,7 @@
 <?php
 
 use Gateway\QueryInterface;
+use ImgSeek\Entity\Image;
 use ImgSeek\Entity\ImageInterface;
 use ImgSeek\Exception\ImgSeekException;
 use ImgSeek\Gateway\PersistenceGatewayInterface;
@@ -28,7 +29,18 @@ class PersistenceTestGateway implements PersistenceGatewayInterface
 
     public function findImages(array $imageIds)
     {
-        throw new \Exception('not implemented');
+        $images = array();
+        $rp = new \ReflectionProperty('ImgSeek\Entity\Image', 'imageId');
+        $rp->setAccessible(true);
+
+        foreach ($imageIds as $imageId) {
+            $image = new Image();
+            $rp->setValue($image, $imageId);
+
+            $images[] = $image;
+        }
+
+        return $images;
     }
 
     public function persistImage(ImageInterface $image)

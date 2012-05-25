@@ -92,7 +92,42 @@ class ImgSeekManager
      */
     public function queryByUrl($url, $returns=12, $sketch=0, $fast=false)
     {
+        $request = new Request();
+        $request->fromUrl($url);
+        $response = new Response();
 
+        $this->httpClient->send($request, $response);
+
+        $imgResponses = $this->imgSeekGateway->request('queryImgBlob',
+            array(
+                $this->defaultDbId,
+                $response->getContent(),
+                $returns,
+                $sketch,
+                $fast,
+            )
+        );
+
+        $imageIds = array();
+        foreach($imgResponses as $imgResponse) {
+            $imageIds[] = $imgResponse[0];
+        }
+
+        $images = array();
+        foreach ($this->persistence->findImages($imageIds) as $image) {
+            $imageId = $image->getImageId();
+            foreach ($imgResponses as $imgResponse) {
+                if ($imgResponse[0] == $imageId) {
+                    $imageSet['image'] = $image;
+                    $imageSet['score'] = $imgResponse[1];
+                    $images[] = $imageSet;
+
+                    continue;
+                }
+            }
+        }
+
+        return $images;
     }
 
     /**
