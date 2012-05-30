@@ -1,8 +1,8 @@
 <?php
 
 use Buzz\Client\Curl;
-use Buzz\Message\Request;
-use Buzz\Message\Response;
+use Buzz\Message\RequestInterface;
+use Buzz\Message\MessageInterface;
 use ImgSeek\Exception\ImgSeekException;
 use ImgSeek\Gateway\ImgSeekGatewayInterface;
 /**
@@ -17,7 +17,7 @@ class CurlTestClient extends Curl
         $this->content = $content;
     }
 
-    public function send(Request $request, Response $response)
+    public function send(RequestInterface $request, MessageInterface $response)
     {
         $response->setContent($this->content);
     }
